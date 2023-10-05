@@ -1,4 +1,4 @@
-table 50102 TaxIDRequestErrors
+table 50102 "TaxIDRequestErrors"
 {
     DataClassification = ToBeClassified;
 

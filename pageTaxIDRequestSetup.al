@@ -1,9 +1,9 @@
-page 50101 TaxIDRequestSetup
+page 50101 "Tax ID Request Setup"
 {
     PageType = Document;
     ApplicationArea = All;
     UsageCategory = Lists;
-    SourceTable = TaxIDRequestSetup;
+    SourceTable = "TaxIDRequestSetup";
 
     layout
     {
@@ -11,7 +11,7 @@ page 50101 TaxIDRequestSetup
         {
             repeater(GroupName)
             {
-                field(RequestID; Rec.CallID)
+                field("Request ID"; Rec.CallID)
                 { ApplicationArea = All; }
                 field(URL; rec.API_URL)
                 { ApplicationArea = All; }
@@ -24,7 +24,7 @@ page 50101 TaxIDRequestSetup
     {
         area(Processing)
         {
-            action(CallAPI)
+            action("Call API")
             {
                 ApplicationArea = All;
 
@@ -36,5 +36,5 @@ page 50101 TaxIDRequestSetup
         }
     }
     var
-        APICodeunit: Codeunit TaxIDApiRequest;
+        APICodeunit: Codeunit "Tax ID Request";
 }

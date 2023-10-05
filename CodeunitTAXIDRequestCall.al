@@ -1,6 +1,23 @@
-codeunit 50100 TaxIDApiRequest
+codeunit 50102 "Tax ID Request"
 {
     trigger OnRun()
+    begin
+        MakeRequest();
+    end;
+
+    procedure MakeRequest()
+    var
+        Client: HttpClient;
+        RequestURI: Text;
+        IsSuccessful: Boolean;
+        Response: HttpResponseMessage;
+        ResponseText: Text;
+        TempXMLBuffer: Record "XML Buffer" temporary;
+        EntryNo: Integer;
+        TaxIDRequestSetup: Record "TaxIDRequestSetup";
+        CompanyInformation: Record "Company Information";
+        TaxIDRequestErrors: Record "TaxIDRequestErrors";
+
     begin
         TaxIDRequestSetup.GET(1);
         CompanyInformation.GET();
@@ -15,20 +32,10 @@ codeunit 50100 TaxIDApiRequest
             TempXMLBuffer.Reset();
             TempXMLBuffer.SetFilter("Entry No.", '>%1', EntryNo);
             TempXMLBuffer.SetFilter(Value, '<>%1', '');
-            IF TempXMLBuffer.FindFirst() then
-                Message(TempXMLBuffer.Value);
+            IF TempXMLBuffer.FindFirst() then begin
+                IF TaxIDRequestErrors.GET(TempXMLBuffer.Value) then
+                    Message(TaxIDRequestErrors."Error Description");
+            end;
         end;
-
     end;
-
-    var
-        TaxIDRequestSetup: Record TaxIDRequestSetup;
-        CompanyInformation: Record "Company Information";
-        Client: HttpClient;
-        RequestURI: Text;
-        IsSuccessful: Boolean;
-        Response: HttpResponseMessage;
-        ResponseText: Text;
-        TempXMLBuffer: Record "XML Buffer" temporary;
-        EntryNo: Integer;
 }

@@ -1,4 +1,4 @@
-table 50100 TaxIDRequestSetup
+table 50100 "TaxIDRequestSetup"
 {
     DataClassification = ToBeClassified;
 
