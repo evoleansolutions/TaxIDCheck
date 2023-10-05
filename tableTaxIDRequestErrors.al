@@ -1,3 +1,6 @@
+/// <summary>
+/// Table TaxIDRequestErrors (ID 50102).
+/// </summary>
 table 50102 "TaxIDRequestErrors"
 {
     DataClassification = ToBeClassified;

@@ -1,3 +1,6 @@
+/// <summary>
+/// Page Tax ID Request Setup (ID 50101).
+/// </summary>
 page 50101 "Tax ID Request Setup"
 {
     PageType = Document;

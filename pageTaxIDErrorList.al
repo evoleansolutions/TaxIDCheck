@@ -1,3 +1,6 @@
+/// <summary>
+/// Page Tax ID Request Error List (ID 50102).
+/// </summary>
 page 50102 "Tax ID Request Error List"
 {
     PageType = List;

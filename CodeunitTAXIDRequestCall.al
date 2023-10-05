@@ -1,3 +1,6 @@
+/// <summary>
+/// Codeunit Tax ID Request (ID 50102).
+/// </summary>
 codeunit 50102 "Tax ID Request"
 {
     trigger OnRun()
@@ -5,6 +8,9 @@ codeunit 50102 "Tax ID Request"
         MakeRequest();
     end;
 
+    /// <summary>
+    /// MakeRequest.
+    /// </summary>
     procedure MakeRequest()
     var
         Client: HttpClient;
