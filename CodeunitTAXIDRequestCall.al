@@ -19,8 +19,6 @@ codeunit 50100 TaxIDApiRequest
                 Message(TempXMLBuffer.Value);
         end;
 
-
-
     end;
 
     var
