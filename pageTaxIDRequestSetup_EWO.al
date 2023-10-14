@@ -15,9 +15,11 @@ page 50000 "TaxIDRequestSetup_EWO"
             {
                 field("Request ID"; Rec.CallID)
                 { ApplicationArea = All; }
-                field(URL; rec.API_URL)
+                field(URL; Rec.API_URL)
                 { ApplicationArea = All; }
-                field("Success Code"; rec."Success Code")
+                field("Success Code"; Rec."Success Code")
+                { ApplicationArea = All; }
+                field("XML Error Tag"; Rec."XML Error Tag")
                 { ApplicationArea = All; }
             }
 

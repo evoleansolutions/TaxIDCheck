@@ -28,7 +28,7 @@ codeunit 50000 "TaxIDRequest_EWO"
         Response.Content().ReadAs(ResponseText);
         TempXMLBuffer.LoadFromText(ResponseText);
         TempXMLBuffer.Reset();
-        TempXMLBuffer.SetRange(Value, 'ErrorCode');
+        TempXMLBuffer.SetRange(Value, TaxIDRequestSetup."XML Error Tag");
         IF TempXMLBuffer.FindFirst() THEN begin
             EntryNo := TempXMLBuffer."Entry No.";
             TempXMLBuffer.Reset();

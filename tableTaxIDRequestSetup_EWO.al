@@ -11,6 +11,8 @@ table 50000 "TaxIDRequestSetup_EWO"
         { DataClassification = ToBeClassified; }
         field(3; "Success Code"; Text[30])
         { DataClassification = ToBeClassified; }
+        field(4; "XML Error Tag"; Text[30])
+        { DataClassification = ToBeClassified; }
 
     }
 
