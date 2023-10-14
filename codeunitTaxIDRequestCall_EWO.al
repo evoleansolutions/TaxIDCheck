@@ -35,8 +35,10 @@ codeunit 50000 "TaxIDRequest_EWO"
             TempXMLBuffer.SetFilter("Entry No.", '>%1', EntryNo);
             TempXMLBuffer.SetFilter(Value, '<>%1', '');
             IF TempXMLBuffer.FindFirst() then begin
-                IF TaxIDRequestErrors.GET(TempXMLBuffer.Value) then
+                IF TaxIDRequestErrors.GET(TempXMLBuffer.Value) then begin
                     Message(TaxIDRequestErrors."Error Description");
+                    InsertRequestLogs('', TaxIDRequestErrors."Error Code", TaxIDRequestErrors."Error Description", 2);
+                end;
             end;
         end;
     end;
@@ -47,7 +49,7 @@ codeunit 50000 "TaxIDRequest_EWO"
             Clear(TaxIDRequestLogs);
             TaxIDRequestLogs."Request DateTime" := CreateDateTime(Today, Time);
             TaxIDRequestLogs."Requested Tax ID" := TaxID;
-            TaxIDRequestLogs.Insert(true)
+            TaxIDRequestLogs.Insert(true);
         end else
             if Type = 2 then begin
                 TaxIDRequestLogs."Response Code" := ResponseCode;
