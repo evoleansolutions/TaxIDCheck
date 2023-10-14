@@ -1,17 +1,12 @@
-/// <summary>
-/// Codeunit Tax ID Request (ID 50102).
-/// </summary>
-codeunit 50102 "Tax ID Request"
+
+codeunit 50000 "TaxIDRequest_EWO"
 {
     trigger OnRun()
     begin
-        MakeRequest();
+        MakeRequest('NL854437691B01');
     end;
 
-    /// <summary>
-    /// MakeRequest.
-    /// </summary>
-    procedure MakeRequest()
+    procedure MakeRequest(RequestedTaxID: Text[30])
     var
         Client: HttpClient;
         RequestURI: Text;
@@ -20,14 +15,15 @@ codeunit 50102 "Tax ID Request"
         ResponseText: Text;
         TempXMLBuffer: Record "XML Buffer" temporary;
         EntryNo: Integer;
-        TaxIDRequestSetup: Record "TaxIDRequestSetup";
+        TaxIDRequestSetup: Record "TaxIDRequestSetup_EWO";
         CompanyInformation: Record "Company Information";
-        TaxIDRequestErrors: Record "TaxIDRequestErrors";
+        TaxIDRequestErrors: Record "TaxIDRequestErrors_EWO";
 
     begin
         TaxIDRequestSetup.GET(1);
         CompanyInformation.GET();
-        RequestURI := StrSubstNo(TaxIDRequestSetup.API_URL, CompanyInformation."VAT Registration No.", 'NL854437691B01');
+        InsertRequestLogs(RequestedTaxID, '', '', 1);
+        RequestURI := StrSubstNo(TaxIDRequestSetup.API_URL, CompanyInformation."VAT Registration No.", RequestedTaxID);
         IsSuccessful := Client.Get(RequestURI, Response);
         Response.Content().ReadAs(ResponseText);
         TempXMLBuffer.LoadFromText(ResponseText);
@@ -44,4 +40,22 @@ codeunit 50102 "Tax ID Request"
             end;
         end;
     end;
+
+    procedure InsertRequestLogs(TaxID: Text[30]; ResponseCode: Text[30]; ResponseText: Text[250]; Type: Integer)
+    begin
+        if Type = 1 then begin
+            Clear(TaxIDRequestLogs);
+            TaxIDRequestLogs."Request DateTime" := CreateDateTime(Today, Time);
+            TaxIDRequestLogs."Requested Tax ID" := TaxID;
+            TaxIDRequestLogs.Insert(true)
+        end else
+            if Type = 2 then begin
+                TaxIDRequestLogs."Response Code" := ResponseCode;
+                TaxIDRequestLogs."Response Description" := ResponseText;
+                TaxIDRequestLogs.Modify();
+            end;
+    end;
+
+    var
+        TaxIDRequestLogs: Record TaxIDRequestLogs_EWO;
 }

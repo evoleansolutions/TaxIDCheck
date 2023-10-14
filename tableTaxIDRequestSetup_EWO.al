@@ -1,5 +1,6 @@
-table 50100 "TaxIDRequestSetup"
+table 50000 "TaxIDRequestSetup_EWO"
 {
+    Caption = 'Tax ID Request Setup';
     DataClassification = ToBeClassified;
 
     fields

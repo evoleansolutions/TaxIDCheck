@@ -1,8 +1,6 @@
-/// <summary>
-/// Table TaxIDRequestErrors (ID 50102).
-/// </summary>
-table 50102 "TaxIDRequestErrors"
+table 50001 "TaxIDRequestErrors_EWO"
 {
+    Caption = 'Tax ID Request Errors';
     DataClassification = ToBeClassified;
 
     fields

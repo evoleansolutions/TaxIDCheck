@@ -1,12 +1,11 @@
-/// <summary>
-/// Page Tax ID Request Setup (ID 50101).
-/// </summary>
-page 50101 "Tax ID Request Setup"
+
+page 50000 "TaxIDRequestSetup_EWO"
 {
+    Caption = 'Tax ID Request Setup';
     PageType = Document;
     ApplicationArea = All;
     UsageCategory = Lists;
-    SourceTable = "TaxIDRequestSetup";
+    SourceTable = "TaxIDRequestSetup_EWO";
 
     layout
     {
@@ -41,5 +40,6 @@ page 50101 "Tax ID Request Setup"
         }
     }
     var
-        APICodeunit: Codeunit "Tax ID Request";
+        APICodeunit: Codeunit "TaxIDRequest_EWO";
+
 }
