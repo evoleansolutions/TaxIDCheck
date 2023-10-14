@@ -18,6 +18,8 @@ page 50101 "Tax ID Request Setup"
                 { ApplicationArea = All; }
                 field(URL; rec.API_URL)
                 { ApplicationArea = All; }
+                field("Success Code"; rec."Success Code")
+                { ApplicationArea = All; }
             }
 
         }
