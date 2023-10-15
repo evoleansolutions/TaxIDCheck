@@ -18,6 +18,7 @@ codeunit 50000 "TaxIDRequest_EWO"
         TaxIDRequestSetup: Record "TaxIDRequestSetup_EWO";
         CompanyInformation: Record "Company Information";
         TaxIDRequestErrors: Record "TaxIDRequestErrors_EWO";
+        ErrorTxt: Label 'Request is not completed due to a server error. Please try again later.';
 
     begin
         TaxIDRequestSetup.Get(1);
@@ -25,19 +26,23 @@ codeunit 50000 "TaxIDRequest_EWO"
         InsertRequestLog(RequestedTaxID);
         RequestURI := StrSubstNo(TaxIDRequestSetup.API_URL, CompanyInformation."VAT Registration No.", RequestedTaxID);
         IsSuccessful := Client.Get(RequestURI, Response);
-        Response.Content().ReadAs(ResponseText);
-        TempXMLBuffer.LoadFromText(ResponseText);
-        TempXMLBuffer.Reset();
-        TempXMLBuffer.SetRange(Value, TaxIDRequestSetup."XML Error Tag");
-        IF TempXMLBuffer.FindFirst() THEN begin
-            EntryNo := TempXMLBuffer."Entry No.";
+        if not IsSuccessful then
+            UpdateRequstLog('', ErrorTxt)
+        else begin
+            Response.Content().ReadAs(ResponseText);
+            TempXMLBuffer.LoadFromText(ResponseText);
             TempXMLBuffer.Reset();
-            TempXMLBuffer.SetFilter("Entry No.", '>%1', EntryNo);
-            TempXMLBuffer.SetFilter(Value, '<>%1', '');
-            IF TempXMLBuffer.FindFirst() then begin
-                IF TaxIDRequestErrors.GET(TempXMLBuffer.Value) then begin
-                    Message(TaxIDRequestErrors."Error Description");
-                    UpdateRequstLog(TaxIDRequestErrors."Error Code", TaxIDRequestErrors."Error Description");
+            TempXMLBuffer.SetRange(Value, TaxIDRequestSetup."XML Error Tag");
+            IF TempXMLBuffer.FindFirst() THEN begin
+                EntryNo := TempXMLBuffer."Entry No.";
+                TempXMLBuffer.Reset();
+                TempXMLBuffer.SetFilter("Entry No.", '>%1', EntryNo);
+                TempXMLBuffer.SetFilter(Value, '<>%1', '');
+                IF TempXMLBuffer.FindFirst() then begin
+                    IF TaxIDRequestErrors.GET(TempXMLBuffer.Value) then begin
+                        Message(TaxIDRequestErrors."Error Description");
+                        UpdateRequstLog(TaxIDRequestErrors."Error Code", TaxIDRequestErrors."Error Description");
+                    end;
                 end;
             end;
         end;
