@@ -18,6 +18,13 @@ table 50002 TaxIDRequestLogs_EWO
         { DataClassification = ToBeClassified; }
         field(5; "Response Description"; Text[250])
         { DataClassification = ToBeClassified; }
+        field(6; "Account Type"; Option)
+        {
+            DataClassification = ToBeClassified;
+            OptionMembers = Customer,Vendor;
+        }
+        field(7; "Account No."; Code[20])
+        { DataClassification = ToBeClassified; }
 
     }
 

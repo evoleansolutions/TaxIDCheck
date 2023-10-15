@@ -21,6 +21,8 @@ page 50000 "TaxIDRequestSetup_EWO"
                 { ApplicationArea = All; }
                 field("XML Error Tag"; Rec."XML Error Tag")
                 { ApplicationArea = All; }
+                field("Control Period"; Rec."Control Period")
+                { ApplicationArea = All; }
             }
 
         }
