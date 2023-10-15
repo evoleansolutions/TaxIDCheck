@@ -20,9 +20,9 @@ codeunit 50000 "TaxIDRequest_EWO"
         TaxIDRequestErrors: Record "TaxIDRequestErrors_EWO";
 
     begin
-        TaxIDRequestSetup.GET(1);
-        CompanyInformation.GET();
-        InsertRequestLogs(RequestedTaxID, '', '', 1);
+        TaxIDRequestSetup.Get(1);
+        CompanyInformation.Get();
+        InsertRequestLog(RequestedTaxID);
         RequestURI := StrSubstNo(TaxIDRequestSetup.API_URL, CompanyInformation."VAT Registration No.", RequestedTaxID);
         IsSuccessful := Client.Get(RequestURI, Response);
         Response.Content().ReadAs(ResponseText);
@@ -37,25 +37,25 @@ codeunit 50000 "TaxIDRequest_EWO"
             IF TempXMLBuffer.FindFirst() then begin
                 IF TaxIDRequestErrors.GET(TempXMLBuffer.Value) then begin
                     Message(TaxIDRequestErrors."Error Description");
-                    InsertRequestLogs('', TaxIDRequestErrors."Error Code", TaxIDRequestErrors."Error Description", 2);
+                    UpdateRequstLog(TaxIDRequestErrors."Error Code", TaxIDRequestErrors."Error Description");
                 end;
             end;
         end;
     end;
 
-    procedure InsertRequestLogs(TaxID: Text[30]; ResponseCode: Text[30]; ResponseText: Text[250]; Type: Integer)
+    procedure InsertRequestLog(TaxID: Text[30])
     begin
-        if Type = 1 then begin
-            Clear(TaxIDRequestLogs);
-            TaxIDRequestLogs."Request DateTime" := CreateDateTime(Today, Time);
-            TaxIDRequestLogs."Requested Tax ID" := TaxID;
-            TaxIDRequestLogs.Insert(true);
-        end else
-            if Type = 2 then begin
-                TaxIDRequestLogs."Response Code" := ResponseCode;
-                TaxIDRequestLogs."Response Description" := ResponseText;
-                TaxIDRequestLogs.Modify();
-            end;
+        Clear(TaxIDRequestLogs);
+        TaxIDRequestLogs."Request DateTime" := CreateDateTime(Today, Time);
+        TaxIDRequestLogs."Requested Tax ID" := TaxID;
+        TaxIDRequestLogs.Insert(true);
+    end;
+
+    procedure UpdateRequstLog(ResponseCode: Text[30]; ResponseText: Text[250])
+    begin
+        TaxIDRequestLogs."Response Code" := ResponseCode;
+        TaxIDRequestLogs."Response Description" := ResponseText;
+        TaxIDRequestLogs.Modify();
     end;
 
     var
