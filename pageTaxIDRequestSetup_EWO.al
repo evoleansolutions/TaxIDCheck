@@ -23,6 +23,14 @@ page 50000 "TaxIDRequestSetup_EWO"
                 { ApplicationArea = All; }
                 field("Control Period"; Rec."Control Period")
                 { ApplicationArea = All; }
+                field("Name Check Tag"; Rec."Name Check Tag")
+                { ApplicationArea = All; }
+                field("City Check Tag"; Rec."City Check Tag")
+                { ApplicationArea = All; }
+                field("Post Code Check Tag"; Rec."Post Code Check Tag")
+                { ApplicationArea = All; }
+                field("Street Check Tag"; Rec."Street Check Tag")
+                { ApplicationArea = All; }
             }
 
         }
@@ -38,12 +46,14 @@ page 50000 "TaxIDRequestSetup_EWO"
 
                 trigger OnAction();
                 begin
-                    APICodeunit.RUN();
+                    Customer.GET('D00020 ');
+                    APICodeunit.ValidateRequest(0, Customer."No.");
                 end;
             }
         }
     }
     var
+        Customer: Record Customer;
         APICodeunit: Codeunit "TaxIDRequest_EWO";
 
 }
