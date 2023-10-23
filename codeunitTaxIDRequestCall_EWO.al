@@ -19,10 +19,10 @@ codeunit 50000 "TaxIDRequest_EWO"
             gAccountType::pCustomer:
                 begin
                     Customer.get(AccountNo);
-                    if Customer."VAT ID Check Date" = 0D then
+                    if Customer."Tax ID Check Date" = 0D then
                         MakeRequest()
                     else begin
-                        if Customer."VAT ID Check Date" > ControlDate then
+                        if Customer."Tax ID Check Date" > ControlDate then
                             ResponseAction(TaxIDRequestSetup."Success Code")
                         else
                             MakeRequest();
@@ -31,10 +31,10 @@ codeunit 50000 "TaxIDRequest_EWO"
             AccountType::pVendor:
                 begin
                     Vendor.get(AccountNo);
-                    if Vendor."VAT ID Check Date" = 0D then
+                    if Vendor."Tax ID Check Date" = 0D then
                         MakeRequest()
                     else begin
-                        if Vendor."VAT ID Check Date" > ControlDate then
+                        if Vendor."Tax ID Check Date" > ControlDate then
                             ResponseAction(TaxIDRequestSetup."Success Code")
                         else
                             MakeRequest();
@@ -171,13 +171,13 @@ codeunit 50000 "TaxIDRequest_EWO"
                 gAccountType of
                 gAccountType::pCustomer:
                     begin
-                        Customer."VAT ID Check Date" := TODAY;
+                        Customer."Tax ID Check Date" := TODAY;
                         Customer."VAT ID Validation" := Customer."VAT ID Validation"::Validated;
                         Customer.Modify(true);
                     end;
                 gAccountType::pVendor:
                     begin
-                        Vendor."VAT ID Check Date" := TODAY;
+                        Vendor."Tax ID Check Date" := TODAY;
                         Vendor.Modify(true);
                     end;
             end;
