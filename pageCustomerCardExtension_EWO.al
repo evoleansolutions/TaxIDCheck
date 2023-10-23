@@ -1,5 +1,18 @@
 pageextension 50003 CustomerCardExtension_EWO extends "Customer Card"
 {
+    layout
+    {
+        addlast(Invoicing)
+        {
+            field("VAT ID Validation"; Rec."VAT ID Validation")
+            {
+                trigger OnAssistEdit()
+                begin
+                    VatIDRequestCall.ShowResponseLogs_AccountCard(Rec."VAT Registration No.");
+                end;
+            }
+        }
+    }
     actions
     {
         addlast(Creation)
@@ -21,4 +34,6 @@ pageextension 50003 CustomerCardExtension_EWO extends "Customer Card"
             }
         }
     }
+    var
+        VatIDRequestCall: Codeunit TaxIDRequest_EWO;
 }

@@ -18,6 +18,8 @@ page 50002 TaxIDRequestLogs_EWO
                 { ApplicationArea = All; }
                 field("Requested Tax ID"; Rec."Requested Tax ID")
                 { ApplicationArea = All; }
+                field("Requested Field"; Rec."Requested Field")
+                { ApplicationArea = All; }
                 field("Response Code"; Rec."Response Code")
                 { ApplicationArea = All; }
                 field("Response Description"; Rec."Response Description")

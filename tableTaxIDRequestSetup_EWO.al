@@ -25,6 +25,12 @@ table 50000 "TaxIDRequestSetup_EWO"
         { DataClassification = ToBeClassified; }
         field(10; "Street Check Tag"; Text[10])
         { DataClassification = ToBeClassified; }
+        field(11; "Account Validation"; Option)
+        {
+            DataClassification = ToBeClassified;
+            OptionMembers = "VAT ID","VAT ID+Account Name","VAT ID+Account Name+Account Address";
+        }
+
     }
 
     keys

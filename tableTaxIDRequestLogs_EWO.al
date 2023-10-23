@@ -25,6 +25,8 @@ table 50002 TaxIDRequestLogs_EWO
         }
         field(7; "Account No."; Code[20])
         { DataClassification = ToBeClassified; }
+        field(8; "Requested Field"; Text[30])
+        { DataClassification = ToBeClassified; }
 
     }
 

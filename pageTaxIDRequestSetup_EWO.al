@@ -31,27 +31,14 @@ page 50000 "TaxIDRequestSetup_EWO"
                 { ApplicationArea = All; }
                 field("Street Check Tag"; Rec."Street Check Tag")
                 { ApplicationArea = All; }
+                field("Account Validation"; Rec."Account Validation")
+                { ApplicationArea = All; }
             }
 
         }
 
     }
-    actions
-    {
-        area(Processing)
-        {
-            action("Call API")
-            {
-                ApplicationArea = All;
 
-                trigger OnAction();
-                begin
-                    Customer.GET('D00020 ');
-                    APICodeunit.ValidateRequest(0, Customer."No.");
-                end;
-            }
-        }
-    }
     var
         Customer: Record Customer;
         APICodeunit: Codeunit "TaxIDRequest_EWO";
