@@ -151,6 +151,7 @@ codeunit 50000 "TaxIDRequest_EWO"
         Clear(TaxIDRequestLogs);
         TaxIDRequestLogs."Request DateTime" := CreateDateTime(Today, Time);
         TaxIDRequestLogs."Requested Tax ID" := gAccountTaxID;
+        TaxIDRequestLogs."Requested Field" := RequestedField;
         TaxIDRequestLogs."Response Code" := ResponseCode;
         TaxIDRequestLogs."Response Description" := ResponseText;
         TaxIDRequestLogs.Insert(true);
@@ -209,7 +210,7 @@ codeunit 50000 "TaxIDRequest_EWO"
         IF TaxIDRequestLogs.FindLast() then begin
             EntryFilter := TaxIDRequestLogs."Entry No.";
             TaxIDRequestLogs.Reset();
-            TaxIDRequestLogs.SetFilter("Entry No.", '>%1', EntryFilter);
+            TaxIDRequestLogs.SetFilter("Entry No.", '>=%1', EntryFilter);
             Clear(TaxIDRequestLogList);
             TaxIDRequestLogList.SetTableView(TaxIDRequestLogs);
             TaxIDRequestLogList.Run();

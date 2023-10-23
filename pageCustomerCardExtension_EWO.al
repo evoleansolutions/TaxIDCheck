@@ -2,11 +2,12 @@ pageextension 50003 CustomerCardExtension_EWO extends "Customer Card"
 {
     layout
     {
-        addlast(Invoicing)
+        addafter("VAT Registration No.")
         {
             field("VAT ID Validation"; Rec."VAT ID Validation")
             {
-                Caption = 'VAT Id Validation';
+                Caption = 'VAT Reg. No. Validation';
+                ApplicationArea = All;
                 trigger OnAssistEdit()
                 begin
                     VatIDRequestCall.ShowResponseLogs_AccountCard(Rec."VAT Registration No.");
