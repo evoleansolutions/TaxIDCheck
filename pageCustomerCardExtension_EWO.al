@@ -6,6 +6,7 @@ pageextension 50003 CustomerCardExtension_EWO extends "Customer Card"
         {
             field("VAT ID Validation"; Rec."VAT ID Validation")
             {
+                Caption = 'VAT Id Validation';
                 trigger OnAssistEdit()
                 begin
                     VatIDRequestCall.ShowResponseLogs_AccountCard(Rec."VAT Registration No.");
