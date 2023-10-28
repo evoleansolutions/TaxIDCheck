@@ -1,11 +1,11 @@
 
-page 50000 "TaxIDRequestSetup_EWO"
+page 50000 "VATIDCheckSetup_EWO"
 {
-    Caption = 'Tax ID Request Setup';
+    Caption = 'VAT ID Check Setup';
     PageType = Document;
     ApplicationArea = All;
     UsageCategory = Lists;
-    SourceTable = "TaxIDRequestSetup_EWO";
+    SourceTable = "VATIDCheckSetup_EWO";
 
     layout
     {
@@ -14,7 +14,10 @@ page 50000 "TaxIDRequestSetup_EWO"
             repeater(GroupName)
             {
                 field("Request ID"; Rec.CallID)
-                { ApplicationArea = All; }
+                {
+                    ApplicationArea = All;
+                    Visible = false;
+                }
                 field(URL; Rec.API_URL)
                 { ApplicationArea = All; }
                 field("Success Code"; Rec."Success Code")
@@ -41,6 +44,6 @@ page 50000 "TaxIDRequestSetup_EWO"
 
     var
         Customer: Record Customer;
-        APICodeunit: Codeunit "TaxIDRequest_EWO";
+        APICodeunit: Codeunit "VATIDCheckRequest_EWO";
 
 }

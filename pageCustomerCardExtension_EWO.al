@@ -10,7 +10,7 @@ pageextension 50003 CustomerCardExtension_EWO extends "Customer Card"
                 ApplicationArea = All;
                 trigger OnAssistEdit()
                 begin
-                    VatIDRequestCall.ShowResponseLogs_AccountCard(Rec."VAT Registration No.");
+                    VATIDCheckCall.ShowResponseLogs_AccountCard(Rec."VAT Registration No.");
                 end;
             }
         }
@@ -28,14 +28,14 @@ pageextension 50003 CustomerCardExtension_EWO extends "Customer Card"
                     Caption = 'Check Customer Account';
                     trigger OnAction()
                     var
-                        VATIdRequestCall: Codeunit TaxIDRequest_EWO;
+                        VATIDCheckCall: Codeunit VATIDCheckRequest_EWO;
                     begin
-                        VATIdRequestCall.ValidateRequest(0, Rec."No.");
+                        VATIDCheckCall.ValidateRequest(0, Rec."No.");
                     end;
                 }
             }
         }
     }
     var
-        VatIDRequestCall: Codeunit TaxIDRequest_EWO;
+        VATIDCheckCall: Codeunit VATIDCheckRequest_EWO;
 }

@@ -1,6 +1,6 @@
-table 50001 "TaxIDRequestErrors_EWO"
+table 50001 "VATIDCheckErrors_EWO"
 {
-    Caption = 'Tax ID Request Errors';
+    Caption = 'VAT ID Check Errors';
     DataClassification = ToBeClassified;
 
     fields

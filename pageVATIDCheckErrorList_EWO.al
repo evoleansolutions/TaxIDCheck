@@ -1,11 +1,11 @@
 
-page 50001 "TaxIDRequestErrorList_EWO"
+page 50001 "VATIDCheckErrorList_EWO"
 {
-    Caption = 'Tax ID Request Error List';
+    Caption = 'VAT ID Check Error List';
     PageType = List;
     ApplicationArea = All;
     UsageCategory = Lists;
-    SourceTable = "TaxIDRequestErrors_EWO";
+    SourceTable = "VATIDCheckErrors_EWO";
 
     layout
     {

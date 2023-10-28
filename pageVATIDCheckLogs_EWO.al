@@ -1,10 +1,10 @@
-page 50002 TaxIDRequestLogs_EWO
+page 50002 VATIDCheckLogs_EWO
 {
-    Caption = 'Tax ID Request Logs';
+    Caption = 'VAT ID Check Logs';
     PageType = List;
     ApplicationArea = All;
     UsageCategory = Lists;
-    SourceTable = TaxIDRequestLogs_EWO;
+    SourceTable = VATIDCheckLogs_EWO;
 
     layout
     {
@@ -16,7 +16,7 @@ page 50002 TaxIDRequestLogs_EWO
                 { ApplicationArea = All; }
                 field("Request DateTime"; Rec."Request DateTime")
                 { ApplicationArea = All; }
-                field("Requested Tax ID"; Rec."Requested Tax ID")
+                field("Requested VAT ID"; Rec."Requested VAT ID")
                 { ApplicationArea = All; }
                 field("Requested Field"; Rec."Requested Field")
                 { ApplicationArea = All; }

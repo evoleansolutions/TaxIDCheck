@@ -1,5 +1,5 @@
 
-codeunit 50000 "TaxIDRequest_EWO"
+codeunit 50000 "VATIDCheckRequest_EWO"
 {
     trigger OnRun()
     begin
@@ -8,22 +8,22 @@ codeunit 50000 "TaxIDRequest_EWO"
 
     procedure ValidateRequest(AccountType: Option pCustomer,pVendor; AccountNo: Code[20])
     var
-        TaxIDRequestSetup: Record "TaxIDRequestSetup_EWO";
+        VATIDCheckSetup: Record "VATIDCheckSetup_EWO";
         ControlDate: Date;
     begin
         gAccountType := AccountType;
-        TaxIDRequestSetup.Get(1);
-        ControlDate := CalcDate('-' + Format(TaxIDRequestSetup."Control Period"), Today);
+        VATIDCheckSetup.Get(1);
+        ControlDate := CalcDate('-' + Format(VATIDCheckSetup."Control Period"), Today);
         case
             gAccountType of
             gAccountType::pCustomer:
                 begin
                     Customer.get(AccountNo);
-                    if Customer."Tax ID Check Date" = 0D then
+                    if Customer."VAT ID Check Date" = 0D then
                         MakeRequest()
                     else begin
-                        if Customer."Tax ID Check Date" > ControlDate then
-                            ResponseAction(TaxIDRequestSetup."Success Code")
+                        if Customer."VAT ID Check Date" > ControlDate then
+                            ResponseAction(VATIDCheckSetup."Success Code")
                         else
                             MakeRequest();
                     end;
@@ -31,11 +31,11 @@ codeunit 50000 "TaxIDRequest_EWO"
             AccountType::pVendor:
                 begin
                     Vendor.get(AccountNo);
-                    if Vendor."Tax ID Check Date" = 0D then
+                    if Vendor."VAT ID Check Date" = 0D then
                         MakeRequest()
                     else begin
-                        if Vendor."Tax ID Check Date" > ControlDate then
-                            ResponseAction(TaxIDRequestSetup."Success Code")
+                        if Vendor."VAT ID Check Date" > ControlDate then
+                            ResponseAction(VATIDCheckSetup."Success Code")
                         else
                             MakeRequest();
                     end;
@@ -45,24 +45,24 @@ codeunit 50000 "TaxIDRequest_EWO"
 
     procedure MakeRequest()
     var
-        TaxIDRequestErrors: Record "TaxIDRequestErrors_EWO";
-        TaxIDRequestSetup: Record "TaxIDRequestSetup_EWO";
+        VATIDCheckErrors: Record "VATIDCheckErrors_EWO";
+        VATIDCheckSetup: Record "VATIDCheckSetup_EWO";
         CompanyInformation: Record "Company Information";
         Client: HttpClient;
         RequestURI: Text;
         IsSuccessful: Boolean;
     begin
-        TaxIDRequestSetup.Get(1);
+        VATIDCheckSetup.Get('');
         CompanyInformation.Get();
         FillKeyValues;
-        TaxIDRequestLogs.FindLast();
-        LastLogEntryNo := TaxIDRequestLogs."Entry No.";
-        RequestURI := StrSubstNo(TaxIDRequestSetup.API_URL, CompanyInformation."VAT Registration No.", gAccountTaxID, gAccountName, gAccountCity, gAccountPostCode, gAccountStreet);
+        VATIDCheckLogs.FindLast();
+        LastLogEntryNo := VATIDCheckLogs."Entry No.";
+        RequestURI := StrSubstNo(VATIDCheckSetup.API_URL, CompanyInformation."VAT Registration No.", gAccountVATID, gAccountName, gAccountCity, gAccountPostCode, gAccountStreet);
         IsSuccessful := Client.Get(RequestURI, Response);
         if not IsSuccessful then begin
-            TaxIDRequestErrors.GET(TaxIDRequestSetup."Request Error Code");
-            InsertUpdateRequestLog('', TaxIDRequestSetup."Request Error Code", TaxIDRequestErrors."Error Description");
-            ResponseAction(TaxIDRequestErrors."Error Code");
+            VATIDCheckErrors.GET(VATIDCheckSetup."Request Error Code");
+            InsertUpdateRequestLog('', VATIDCheckSetup."Request Error Code", VATIDCheckErrors."Error Description");
+            ResponseAction(VATIDCheckErrors."Error Code");
         end else
             ParseResponse();
     end;
@@ -73,7 +73,7 @@ codeunit 50000 "TaxIDRequest_EWO"
             gAccountType of
             gAccountType::pCustomer:
                 begin
-                    gAccountTaxID := Customer."VAT Registration No.";
+                    gAccountVATID := Customer."VAT Registration No.";
                     gAccountName := Customer.Name;
                     gAccountCity := Customer.City;
                     gAccountPostCode := Customer."Post Code";
@@ -81,7 +81,7 @@ codeunit 50000 "TaxIDRequest_EWO"
                 end;
             gAccountType::pVendor:
                 begin
-                    gAccountTaxID := Vendor."VAT Registration No.";
+                    gAccountVATID := Vendor."VAT Registration No.";
                     gAccountName := Vendor.Name;
                     gAccountCity := Vendor.City;
                     gAccountPostCode := Vendor."Post Code";
@@ -95,21 +95,21 @@ codeunit 50000 "TaxIDRequest_EWO"
         i: Integer;
     begin
         TempXMLBuffer.DeleteAll();
-        TaxIDRequestSetup.GET('1');
+        VATIDCheckSetup.GET('');
         Response.Content().ReadAs(ResponseText);
         TempXMLBuffer.LoadFromText(ResponseText);
         for i := 1 to 5 do begin
             case i OF
                 1:
-                    FindValues(TaxIDRequestSetup."XML Error Tag");
+                    FindValues(VATIDCheckSetup."XML Error Tag");
                 2:
-                    FindValues(TaxIDRequestSetup."Name Check Tag");
+                    FindValues(VATIDCheckSetup."Name Check Tag");
                 3:
-                    FindValues(TaxIDRequestSetup."City Check Tag");
+                    FindValues(VATIDCheckSetup."City Check Tag");
                 4:
-                    FindValues(TaxIDRequestSetup."Post Code Check Tag");
+                    FindValues(VATIDCheckSetup."Post Code Check Tag");
                 5:
-                    FindValues(TaxIDRequestSetup."Street Check Tag");
+                    FindValues(VATIDCheckSetup."Street Check Tag");
             end;
         end;
         ShowResponseLogs;
@@ -117,7 +117,7 @@ codeunit 50000 "TaxIDRequest_EWO"
 
     procedure FindValues(TagName: Text)
     var
-        TaxIDRequestErrors: Record "TaxIDRequestErrors_EWO";
+        VATIDCheckErrors: Record "VATIDCheckErrors_EWO";
         EntryNo: Integer;
     begin
         TempXMLBuffer.Reset();
@@ -128,8 +128,8 @@ codeunit 50000 "TaxIDRequest_EWO"
             TempXMLBuffer.SetFilter("Entry No.", '>%1', EntryNo);
             TempXMLBuffer.SetFilter(Value, '<>%1', '');
             IF TempXMLBuffer.FindFirst() then begin
-                IF TaxIDRequestErrors.GET(TempXMLBuffer.Value) then
-                    InsertUpdateRequestLog(TagName, TaxIDRequestErrors."Error Code", TaxIDRequestErrors."Error Description")
+                IF VATIDCheckErrors.GET(TempXMLBuffer.Value) then
+                    InsertUpdateRequestLog(TagName, VATIDCheckErrors."Error Code", VATIDCheckErrors."Error Description")
                 else
                     InsertUpdateRequestLog(TagName, TempXMLBuffer.Value, '');
             end else
@@ -138,23 +138,23 @@ codeunit 50000 "TaxIDRequest_EWO"
             InsertUpdateRequestLog(TagName, '', '');
     end;
 
-    procedure InsertRequestLog(TaxID: Text[30])
+    procedure InsertRequestLog(VATID: Text[30])
     begin
-        Clear(TaxIDRequestLogs);
-        TaxIDRequestLogs."Request DateTime" := CreateDateTime(Today, Time);
-        TaxIDRequestLogs."Requested Tax ID" := TaxID;
-        TaxIDRequestLogs.Insert(true);
+        Clear(VATIDCheckLogs);
+        VATIDCheckLogs."Request DateTime" := CreateDateTime(Today, Time);
+        VATIDCheckLogs."Requested VAT ID" := VATID;
+        VATIDCheckLogs.Insert(true);
     end;
 
     procedure InsertUpdateRequestLog(RequestedField: Text[30]; ResponseCode: Text[30]; ResponseText: Text[250])
     begin
-        Clear(TaxIDRequestLogs);
-        TaxIDRequestLogs."Request DateTime" := CreateDateTime(Today, Time);
-        TaxIDRequestLogs."Requested Tax ID" := gAccountTaxID;
-        TaxIDRequestLogs."Requested Field" := RequestedField;
-        TaxIDRequestLogs."Response Code" := ResponseCode;
-        TaxIDRequestLogs."Response Description" := ResponseText;
-        TaxIDRequestLogs.Insert(true);
+        Clear(VATIDCheckLogs);
+        VATIDCheckLogs."Request DateTime" := CreateDateTime(Today, Time);
+        VATIDCheckLogs."Requested VAT ID" := gAccountVATID;
+        VATIDCheckLogs."Requested Field" := RequestedField;
+        VATIDCheckLogs."Response Code" := ResponseCode;
+        VATIDCheckLogs."Response Description" := ResponseText;
+        VATIDCheckLogs.Insert(true);
     end;
 
     procedure SetHideDialogBox(lHideDialogBox: Boolean)
@@ -164,66 +164,66 @@ codeunit 50000 "TaxIDRequest_EWO"
 
     procedure ResponseAction(ResponseCode: Code[20])
     var
-        TaxIDRequestErrors: Record "TaxIDRequestErrors_EWO";
+        VATIDCheckErrors: Record "VATIDCheckErrors_EWO";
     begin
-        TaxIDRequestSetup.GET('1');
-        if (ResponseCode = TaxIDRequestSetup."Success Code") AND (TaxIDRequestSetup."Account Validation" = 0) then begin
+        VATIDCheckSetup.GET('');
+        if (ResponseCode = VATIDCheckSetup."Success Code") AND (VATIDCheckSetup."Account Validation" = 0) then begin
             case
                 gAccountType of
                 gAccountType::pCustomer:
                     begin
-                        Customer."Tax ID Check Date" := TODAY;
+                        Customer."VAT ID Check Date" := TODAY;
                         Customer."VAT ID Validation" := Customer."VAT ID Validation"::Validated;
                         Customer.Modify(true);
                     end;
                 gAccountType::pVendor:
                     begin
-                        Vendor."Tax ID Check Date" := TODAY;
+                        Vendor."VAT ID Check Date" := TODAY;
                         Vendor.Modify(true);
                     end;
             end;
         end;
         if HideDialogBox = false then begin
-            TaxIDRequestErrors.Get(ResponseCode);
-            Message(TaxIDRequestErrors."Error Description");
+            VATIDCheckErrors.Get(ResponseCode);
+            Message(VATIDCheckErrors."Error Description");
         end;
     end;
 
     procedure ShowResponseLogs()
     begin
-        TaxIDRequestLogs.Reset();
-        TaxIDRequestLogs.SetFilter("Entry No.", '>%1', LastLogEntryNo);
-        Clear(TaxIDRequestLogList);
-        TaxIDRequestLogList.SetTableView(TaxIDRequestLogs);
-        TaxIDRequestLogList.Run();
+        VATIDCheckLogs.Reset();
+        VATIDCheckLogs.SetFilter("Entry No.", '>%1', LastLogEntryNo);
+        Clear(VATIDCheckLogList);
+        VATIDCheckLogList.SetTableView(VATIDCheckLogs);
+        VATIDCheckLogList.Run();
     end;
 
     procedure ShowResponseLogs_AccountCard(VatID: Text[30])
     var
-        VATIDRequestSetup: Record TaxIDRequestSetup_EWO;
+        VATIDCheckSetup: Record VATIDCheckSetup_EWO;
         EntryFilter: Integer;
     begin
-        VATIDRequestSetup.Get('1');
-        TaxIDRequestLogs.Reset();
-        TaxIDRequestLogs.SetRange("Requested Tax ID", VatID);
-        TaxIDRequestLogs.SetRange("Requested Field", VATIDRequestSetup."XML Error Tag");
-        IF TaxIDRequestLogs.FindLast() then begin
-            EntryFilter := TaxIDRequestLogs."Entry No.";
-            TaxIDRequestLogs.Reset();
-            TaxIDRequestLogs.SetFilter("Entry No.", '>=%1', EntryFilter);
-            Clear(TaxIDRequestLogList);
-            TaxIDRequestLogList.SetTableView(TaxIDRequestLogs);
-            TaxIDRequestLogList.Run();
+        VATIDCheckSetup.Get('');
+        VATIDCheckLogs.Reset();
+        VATIDCheckLogs.SetRange("Requested VAT ID", VatID);
+        VATIDCheckLogs.SetRange("Requested Field", VATIDCheckSetup."XML Error Tag");
+        IF VATIDCheckLogs.FindLast() then begin
+            EntryFilter := VATIDCheckLogs."Entry No.";
+            VATIDCheckLogs.Reset();
+            VATIDCheckLogs.SetFilter("Entry No.", '>=%1', EntryFilter);
+            Clear(VATIDCheckLogList);
+            VATIDCheckLogList.SetTableView(VATIDCheckLogs);
+            VATIDCheckLogList.Run();
         end;
     end;
 
     var
-        TaxIDRequestLogs: Record TaxIDRequestLogs_EWO;
+        VATIDCheckLogs: Record VATIDCheckLogs_EWO;
         Customer: Record Customer;
         Vendor: Record Vendor;
-        TaxIDRequestSetup: Record TaxIDRequestSetup_EWO;
+        VATIDCheckSetup: Record VATIDCheckSetup_EWO;
         TempXMLBuffer: Record "XML Buffer" temporary;
-        TaxIDRequestLogList: Page TaxIDRequestLogs_EWO;
+        VATIDCheckLogList: Page VATIDCheckLogs_EWO;
         Response: HttpResponseMessage;
         ResponseText: Text;
         HideDialogBox: Boolean;
@@ -232,6 +232,6 @@ codeunit 50000 "TaxIDRequest_EWO"
         gAccountCity: Text[30];
         gAccountPostCode: Text[20];
         gAccountStreet: Text[50];
-        gAccountTaxID: Text[30];
+        gAccountVATID: Text[30];
         LastLogEntryNo: Integer;
 }

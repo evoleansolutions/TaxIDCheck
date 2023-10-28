@@ -1,6 +1,6 @@
-table 50002 TaxIDRequestLogs_EWO
+table 50002 VATIDCheckLogs_EWO
 {
-    Caption = 'Tax ID Request Logs';
+    Caption = 'VAT ID Check Logs';
     DataClassification = ToBeClassified;
 
     fields
@@ -12,7 +12,7 @@ table 50002 TaxIDRequestLogs_EWO
         }
         field(2; "Request DateTime"; DateTime)
         { DataClassification = ToBeClassified; }
-        field(3; "Requested Tax ID"; Text[30])
+        field(3; "Requested VAT ID"; Text[30])
         { DataClassification = ToBeClassified; }
         field(4; "Response Code"; Text[30])
         { DataClassification = ToBeClassified; }

@@ -1,11 +1,11 @@
-table 50000 "TaxIDRequestSetup_EWO"
+table 50000 "VATIDCheckSetup_EWO"
 {
-    Caption = 'Tax ID Request Setup';
+    Caption = 'VAT ID Check Setup';
     DataClassification = ToBeClassified;
 
     fields
     {
-        field(1; CallID; Integer)
+        field(1; CallID; Code[10])
         { DataClassification = ToBeClassified; }
         field(2; API_URL; Text[250])
         { DataClassification = ToBeClassified; }
