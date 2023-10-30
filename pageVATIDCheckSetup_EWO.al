@@ -36,6 +36,8 @@ page 50000 "VATIDCheckSetup_EWO"
                 { ApplicationArea = All; }
                 field("Account Validation"; Rec."Account Validation")
                 { ApplicationArea = All; }
+                field("Request Error Code"; Rec."Request Error Code")
+                { ApplicationArea = All; }
             }
 
         }

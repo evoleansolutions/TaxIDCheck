@@ -27,6 +27,8 @@ table 50002 VATIDCheckLogs_EWO
         { DataClassification = ToBeClassified; }
         field(8; "Requested Field"; Text[30])
         { DataClassification = ToBeClassified; }
+        field(9; "Account Value"; Text[100])
+        { DataClassification = ToBeClassified; }
 
     }
 

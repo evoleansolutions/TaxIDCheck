@@ -10,7 +10,7 @@ tableextension 50001 Vendor_EWO extends Vendor
         field(50001; "VAT ID Validation"; Option)
         {
             DataClassification = ToBeClassified;
-            OptionMembers = Validated,"Not Validated";
+            OptionMembers = " ",Validated,"Not Validated";
         }
     }
 }

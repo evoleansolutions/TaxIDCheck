@@ -10,32 +10,33 @@ codeunit 50000 "VATIDCheckRequest_EWO"
     var
         VATIDCheckSetup: Record "VATIDCheckSetup_EWO";
         ControlDate: Date;
+        ValidateOption: Option " ",Validated,NotValidated;
     begin
         gAccountType := AccountType;
-        VATIDCheckSetup.Get(1);
+        VATIDCheckSetup.Get('');
         ControlDate := CalcDate('-' + Format(VATIDCheckSetup."Control Period"), Today);
         case
             gAccountType of
             gAccountType::pCustomer:
                 begin
-                    Customer.get(AccountNo);
+                    Customer.Get(AccountNo);
                     if Customer."VAT ID Check Date" = 0D then
                         MakeRequest()
                     else begin
                         if Customer."VAT ID Check Date" > ControlDate then
-                            ResponseAction(VATIDCheckSetup."Success Code")
+                            ResponseAction(ValidateOption::Validated)
                         else
                             MakeRequest();
                     end;
                 end;
             AccountType::pVendor:
                 begin
-                    Vendor.get(AccountNo);
+                    Vendor.Get(AccountNo);
                     if Vendor."VAT ID Check Date" = 0D then
                         MakeRequest()
                     else begin
                         if Vendor."VAT ID Check Date" > ControlDate then
-                            ResponseAction(VATIDCheckSetup."Success Code")
+                            ResponseAction(ValidateOption::Validated)
                         else
                             MakeRequest();
                     end;
@@ -55,14 +56,16 @@ codeunit 50000 "VATIDCheckRequest_EWO"
         VATIDCheckSetup.Get('');
         CompanyInformation.Get();
         FillKeyValues;
-        VATIDCheckLogs.FindLast();
-        LastLogEntryNo := VATIDCheckLogs."Entry No.";
+        if VATIDCheckLogs.FindLast() then
+            LastLogEntryNo := VATIDCheckLogs."Entry No."
+        else
+            LastLogEntryNo := 0;
         RequestURI := StrSubstNo(VATIDCheckSetup.API_URL, CompanyInformation."VAT Registration No.", gAccountVATID, gAccountName, gAccountCity, gAccountPostCode, gAccountStreet);
         IsSuccessful := Client.Get(RequestURI, Response);
         if not IsSuccessful then begin
-            VATIDCheckErrors.GET(VATIDCheckSetup."Request Error Code");
-            InsertUpdateRequestLog('', VATIDCheckSetup."Request Error Code", VATIDCheckErrors."Error Description");
-            ResponseAction(VATIDCheckErrors."Error Code");
+            VATIDCheckErrors.Get(VATIDCheckSetup."Request Error Code");
+            InsertUpdateRequestLog('', VATIDCheckSetup."Request Error Code", VATIDCheckErrors."Error Description", '');
+            //ResponseAction('');
         end else
             ParseResponse();
     end;
@@ -93,49 +96,68 @@ codeunit 50000 "VATIDCheckRequest_EWO"
     procedure ParseResponse()
     var
         i: Integer;
+        TagName: array[5] of Text;
+        AccountValue: array[5] of Text[100];
     begin
-        TempXMLBuffer.DeleteAll();
-        VATIDCheckSetup.GET('');
+        VATIDCheckSetup.Get('');
         Response.Content().ReadAs(ResponseText);
         TempXMLBuffer.LoadFromText(ResponseText);
-        for i := 1 to 5 do begin
-            case i OF
+        for i := 1 to ArrayLen(TagName) do begin
+            case i of
                 1:
-                    FindValues(VATIDCheckSetup."XML Error Tag");
+                    begin
+                        TagName[i] := VATIDCheckSetup."XML Error Tag";
+                        AccountValue[i] := gAccountVATID;
+                    end;
                 2:
-                    FindValues(VATIDCheckSetup."Name Check Tag");
+                    begin
+                        TagName[i] := VATIDCheckSetup."Name Check Tag";
+                        AccountValue[i] := gAccountName;
+                    end;
                 3:
-                    FindValues(VATIDCheckSetup."City Check Tag");
+                    begin
+                        TagName[i] := VATIDCheckSetup."City Check Tag";
+                        AccountValue[i] := gAccountCity;
+                    end;
                 4:
-                    FindValues(VATIDCheckSetup."Post Code Check Tag");
+                    begin
+                        TagName[i] := VATIDCheckSetup."Post Code Check Tag";
+                        AccountValue[i] := gAccountPostCode;
+                    end;
                 5:
-                    FindValues(VATIDCheckSetup."Street Check Tag");
+                    begin
+                        TagName[i] := VATIDCheckSetup."Street Check Tag";
+                        AccountValue[i] := gAccountStreet;
+                    end;
             end;
         end;
+        for i := 1 to ArrayLen(TagName) do
+            FindValues(TagName[i], AccountValue[i]);
+
         ShowResponseLogs;
     end;
 
-    procedure FindValues(TagName: Text)
+    procedure FindValues(TagName: Text; AccountValue: Text)
     var
         VATIDCheckErrors: Record "VATIDCheckErrors_EWO";
         EntryNo: Integer;
     begin
         TempXMLBuffer.Reset();
         TempXMLBuffer.SetRange(Value, TagName);
-        IF TempXMLBuffer.FindFirst() THEN begin
+        if TempXMLBuffer.FindFirst() then begin
             EntryNo := TempXMLBuffer."Entry No.";
             TempXMLBuffer.Reset();
             TempXMLBuffer.SetFilter("Entry No.", '>%1', EntryNo);
             TempXMLBuffer.SetFilter(Value, '<>%1', '');
-            IF TempXMLBuffer.FindFirst() then begin
-                IF VATIDCheckErrors.GET(TempXMLBuffer.Value) then
-                    InsertUpdateRequestLog(TagName, VATIDCheckErrors."Error Code", VATIDCheckErrors."Error Description")
+            if TempXMLBuffer.FindFirst() then begin
+                if VATIDCheckErrors.Get(TempXMLBuffer.Value) then
+                    InsertUpdateRequestLog(TagName, VATIDCheckErrors."Error Code", VATIDCheckErrors."Error Description", AccountValue)
                 else
-                    InsertUpdateRequestLog(TagName, TempXMLBuffer.Value, '');
+                    InsertUpdateRequestLog(TagName, TempXMLBuffer.Value, '', AccountValue);
             end else
-                InsertUpdateRequestLog(TagName, '', '');
+                InsertUpdateRequestLog(TagName, '', '', AccountValue);
         end else
-            InsertUpdateRequestLog(TagName, '', '');
+            InsertUpdateRequestLog(TagName, '', '', AccountValue);
     end;
 
     procedure InsertRequestLog(VATID: Text[30])
@@ -146,7 +168,7 @@ codeunit 50000 "VATIDCheckRequest_EWO"
         VATIDCheckLogs.Insert(true);
     end;
 
-    procedure InsertUpdateRequestLog(RequestedField: Text[30]; ResponseCode: Text[30]; ResponseText: Text[250])
+    procedure InsertUpdateRequestLog(RequestedField: Text[30]; ResponseCode: Text[30]; ResponseText: Text[250]; AccountValue: Text[100])
     begin
         Clear(VATIDCheckLogs);
         VATIDCheckLogs."Request DateTime" := CreateDateTime(Today, Time);
@@ -154,6 +176,7 @@ codeunit 50000 "VATIDCheckRequest_EWO"
         VATIDCheckLogs."Requested Field" := RequestedField;
         VATIDCheckLogs."Response Code" := ResponseCode;
         VATIDCheckLogs."Response Description" := ResponseText;
+        VATIDCheckLogs."Account Value" := AccountValue;
         VATIDCheckLogs.Insert(true);
     end;
 
@@ -162,27 +185,29 @@ codeunit 50000 "VATIDCheckRequest_EWO"
         HideDialogBox := lHideDialogBox;
     end;
 
-    procedure ResponseAction(ResponseCode: Code[20])
+    procedure ResponseAction(ResponseCode: Option " ",Validated,notValidated)
     var
         VATIDCheckErrors: Record "VATIDCheckErrors_EWO";
     begin
-        VATIDCheckSetup.GET('');
-        if (ResponseCode = VATIDCheckSetup."Success Code") AND (VATIDCheckSetup."Account Validation" = 0) then begin
-            case
-                gAccountType of
-                gAccountType::pCustomer:
-                    begin
+        VATIDCheckSetup.Get('');
+        case
+            gAccountType of
+            gAccountType::pCustomer:
+                begin
+                    Customer."VAT ID Validation" := ResponseCode;
+                    if ResponseCode = ResponseCode::Validated then
                         Customer."VAT ID Check Date" := TODAY;
-                        Customer."VAT ID Validation" := Customer."VAT ID Validation"::Validated;
-                        Customer.Modify(true);
-                    end;
-                gAccountType::pVendor:
-                    begin
+                    Customer.Modify(true);
+                end;
+            gAccountType::pVendor:
+                begin
+                    Vendor."VAT ID Validation" := ResponseCode;
+                    if ResponseCode = ResponseCode::Validated then
                         Vendor."VAT ID Check Date" := TODAY;
-                        Vendor.Modify(true);
-                    end;
-            end;
+                    Vendor.Modify(true);
+                end;
         end;
+
         if HideDialogBox = false then begin
             VATIDCheckErrors.Get(ResponseCode);
             Message(VATIDCheckErrors."Error Description");
@@ -207,13 +232,64 @@ codeunit 50000 "VATIDCheckRequest_EWO"
         VATIDCheckLogs.Reset();
         VATIDCheckLogs.SetRange("Requested VAT ID", VatID);
         VATIDCheckLogs.SetRange("Requested Field", VATIDCheckSetup."XML Error Tag");
-        IF VATIDCheckLogs.FindLast() then begin
+        if VATIDCheckLogs.FindLast() then begin
             EntryFilter := VATIDCheckLogs."Entry No.";
             VATIDCheckLogs.Reset();
             VATIDCheckLogs.SetFilter("Entry No.", '>=%1', EntryFilter);
             Clear(VATIDCheckLogList);
             VATIDCheckLogList.SetTableView(VATIDCheckLogs);
             VATIDCheckLogList.Run();
+        end;
+    end;
+
+    procedure ProcessResponseLogs(VatID: Text[30])
+    var
+        VATIDCheckSetup: Record VATIDCheckSetup_EWO;
+        EntryFilter: Integer;
+        ResponseCode: Option " ",Validated,notValidated;
+    begin
+        VATIDCheckSetup.Get('');
+        VATIDCheckLogs.Reset();
+        VATIDCheckLogs.SetRange("Requested VAT ID", VatID);
+        VATIDCheckLogs.SetRange("Requested Field", VATIDCheckSetup."XML Error Tag");
+        if VATIDCheckLogs.FindLast() then begin
+            EntryFilter := VATIDCheckLogs."Entry No.";
+            VATIDCheckLogs.Reset();
+            VATIDCheckLogs.SetFilter("Entry No.", '>=%1', EntryFilter);
+            IF VATIDCheckLogs.FindSet() then begin
+                repeat
+                    case VATIDCheckSetup."Account Validation" of
+                        VATIDCheckSetup."Account Validation"::"VAT ID":
+                            begin
+                                if (VATIDCheckLogs."Requested Field" = VATIDCheckSetup."XML Error Tag") and (VATIDCheckLogs."Response Code" = VATIDCheckSetup."Success Code") then
+                                    ResponseAction(ResponseCode::Validated)
+                                else
+                                    ResponseAction(ResponseCode::notValidated);
+                            end;
+                        VATIDCheckSetup."Account Validation"::"VAT ID+Account Name":
+                            begin
+                                if ((VATIDCheckLogs."Requested Field" = VATIDCheckSetup."XML Error Tag") and (VATIDCheckLogs."Response Code" = VATIDCheckSetup."Success Code"))
+                                and
+                                ((VATIDCheckLogs."Requested Field" = VATIDCheckSetup."Name Check Tag") and (VATIDCheckLogs."Response Code" IN ['A', 'D'])) then
+                                    ResponseAction(ResponseCode::Validated)
+                                else
+                                    ResponseAction(ResponseCode::notValidated)
+                            end;
+                        VATIDCheckSetup."Account Validation"::"VAT ID+Account Name+Account Address":
+                            begin
+                                if ((VATIDCheckLogs."Requested Field" = VATIDCheckSetup."XML Error Tag") and (VATIDCheckLogs."Response Code" = VATIDCheckSetup."Success Code"))
+                                and ((VATIDCheckLogs."Requested Field" = VATIDCheckSetup."Name Check Tag") and (VATIDCheckLogs."Response Code" IN ['A', 'D']))
+                                and ((VATIDCheckLogs."Requested Field" = VATIDCheckSetup."Street Check Tag") and (VATIDCheckLogs."Response Code" IN ['A', 'D'])
+                                and ((VATIDCheckLogs."Requested Field" = VATIDCheckSetup."City Check Tag") and (VATIDCheckLogs."Response Code" IN ['A', 'D']))
+                                and ((VATIDCheckLogs."Requested Field" = VATIDCheckSetup."Post Code Check Tag") and (VATIDCheckLogs."Response Code" IN ['A', 'D'])))
+                                then
+                                    ResponseAction(ResponseCode::Validated)
+                                else
+                                    ResponseAction(ResponseCode::notValidated)
+                            end;
+                    end;
+                until VATIDCheckLogs.Next = 0;
+            end;
         end;
     end;
 

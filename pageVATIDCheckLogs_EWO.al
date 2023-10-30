@@ -5,6 +5,7 @@ page 50002 VATIDCheckLogs_EWO
     ApplicationArea = All;
     UsageCategory = Lists;
     SourceTable = VATIDCheckLogs_EWO;
+    Editable = false;
 
     layout
     {
@@ -24,6 +25,9 @@ page 50002 VATIDCheckLogs_EWO
                 { ApplicationArea = All; }
                 field("Response Description"; Rec."Response Description")
                 { ApplicationArea = All; }
+                field("Account Value"; Rec."Account Value")
+                { ApplicationArea = All; }
+
             }
         }
     }

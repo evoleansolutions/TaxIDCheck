@@ -10,7 +10,7 @@ tableextension 50000 Customer_EWO extends Customer
         field(50001; "VAT ID Validation"; Option)
         {
             DataClassification = ToBeClassified;
-            OptionMembers = Validated,"Not Validated";
+            OptionMembers = " ",Validated,"Not Validated";
         }
     }
 }
