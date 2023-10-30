@@ -164,14 +164,6 @@ codeunit 50000 "VATIDCheckRequest_EWO"
             InsertUpdateRequestLog(TagName, '', '', AccountValue);
     end;
 
-    procedure InsertRequestLog(VATID: Text[30])
-    begin
-        Clear(VATIDCheckLogs);
-        VATIDCheckLogs."Request DateTime" := CreateDateTime(Today, Time);
-        VATIDCheckLogs."Requested VAT ID" := VATID;
-        VATIDCheckLogs.Insert(true);
-    end;
-
     procedure InsertUpdateRequestLog(RequestedField: Text[30]; ResponseCode: Text[30]; ResponseText: Text[250]; AccountValue: Text[100])
     begin
         Clear(VATIDCheckLogs);
