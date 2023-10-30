@@ -20,14 +20,17 @@ codeunit 50000 "VATIDCheckRequest_EWO"
             gAccountType::pCustomer:
                 begin
                     Customer.Get(AccountNo);
-                    if Customer."VAT ID Check Date" = 0D then
-                        MakeRequest()
-                    else begin
-                        if Customer."VAT ID Check Date" > ControlDate then
-                            ResponseAction(ValidateOption::Validated)
-                        else
-                            MakeRequest();
-                    end;
+                    MakeRequest;
+
+                    /*                     if Customer."VAT ID Check Date" = 0D then
+                                            MakeRequest()
+                                        else begin
+                                            if Customer."VAT ID Check Date" > ControlDate then
+                                                ResponseAction(ValidateOption::Validated)
+                                            else
+                                                MakeRequest();
+                                        end; */
+
                 end;
             AccountType::pVendor:
                 begin
@@ -134,6 +137,7 @@ codeunit 50000 "VATIDCheckRequest_EWO"
         for i := 1 to ArrayLen(TagName) do
             FindValues(TagName[i], AccountValue[i]);
 
+        ProcessResponseLogs(gAccountVATID);
         ShowResponseLogs;
     end;
 
@@ -207,11 +211,6 @@ codeunit 50000 "VATIDCheckRequest_EWO"
                     Vendor.Modify(true);
                 end;
         end;
-
-        if HideDialogBox = false then begin
-            VATIDCheckErrors.Get(ResponseCode);
-            Message(VATIDCheckErrors."Error Description");
-        end;
     end;
 
     procedure ShowResponseLogs()
@@ -247,50 +246,62 @@ codeunit 50000 "VATIDCheckRequest_EWO"
         VATIDCheckSetup: Record VATIDCheckSetup_EWO;
         EntryFilter: Integer;
         ResponseCode: Option " ",Validated,notValidated;
+        Success: Boolean;
     begin
         VATIDCheckSetup.Get('');
+        VATIDCheckSetup.TestField("Account Validation");
         VATIDCheckLogs.Reset();
         VATIDCheckLogs.SetRange("Requested VAT ID", VatID);
         VATIDCheckLogs.SetRange("Requested Field", VATIDCheckSetup."XML Error Tag");
         if VATIDCheckLogs.FindLast() then begin
-            EntryFilter := VATIDCheckLogs."Entry No.";
-            VATIDCheckLogs.Reset();
-            VATIDCheckLogs.SetFilter("Entry No.", '>=%1', EntryFilter);
-            IF VATIDCheckLogs.FindSet() then begin
-                repeat
-                    case VATIDCheckSetup."Account Validation" of
-                        VATIDCheckSetup."Account Validation"::"VAT ID":
-                            begin
-                                if (VATIDCheckLogs."Requested Field" = VATIDCheckSetup."XML Error Tag") and (VATIDCheckLogs."Response Code" = VATIDCheckSetup."Success Code") then
-                                    ResponseAction(ResponseCode::Validated)
-                                else
-                                    ResponseAction(ResponseCode::notValidated);
-                            end;
-                        VATIDCheckSetup."Account Validation"::"VAT ID+Account Name":
-                            begin
-                                if ((VATIDCheckLogs."Requested Field" = VATIDCheckSetup."XML Error Tag") and (VATIDCheckLogs."Response Code" = VATIDCheckSetup."Success Code"))
-                                and
-                                ((VATIDCheckLogs."Requested Field" = VATIDCheckSetup."Name Check Tag") and (VATIDCheckLogs."Response Code" IN ['A', 'D'])) then
-                                    ResponseAction(ResponseCode::Validated)
-                                else
-                                    ResponseAction(ResponseCode::notValidated)
-                            end;
-                        VATIDCheckSetup."Account Validation"::"VAT ID+Account Name+Account Address":
-                            begin
-                                if ((VATIDCheckLogs."Requested Field" = VATIDCheckSetup."XML Error Tag") and (VATIDCheckLogs."Response Code" = VATIDCheckSetup."Success Code"))
-                                and ((VATIDCheckLogs."Requested Field" = VATIDCheckSetup."Name Check Tag") and (VATIDCheckLogs."Response Code" IN ['A', 'D']))
-                                and ((VATIDCheckLogs."Requested Field" = VATIDCheckSetup."Street Check Tag") and (VATIDCheckLogs."Response Code" IN ['A', 'D'])
-                                and ((VATIDCheckLogs."Requested Field" = VATIDCheckSetup."City Check Tag") and (VATIDCheckLogs."Response Code" IN ['A', 'D']))
-                                and ((VATIDCheckLogs."Requested Field" = VATIDCheckSetup."Post Code Check Tag") and (VATIDCheckLogs."Response Code" IN ['A', 'D'])))
-                                then
-                                    ResponseAction(ResponseCode::Validated)
-                                else
-                                    ResponseAction(ResponseCode::notValidated)
-                            end;
-                    end;
-                until VATIDCheckLogs.Next = 0;
+            if VATIDCheckLogs."Response Code" <> VATIDCheckSetup."Success Code" then begin
+                ResponseAction(ResponseCode::notValidated);
+                exit;
+            end else begin
+                Success := true;
+                EntryFilter := VATIDCheckLogs."Entry No.";
+                VATIDCheckLogs.Reset();
+                VATIDCheckLogs.SetFilter("Entry No.", '>=%1', EntryFilter);
+                IF VATIDCheckLogs.FindSet() then begin
+                    repeat
+                        case VATIDCheckSetup."Account Validation" of
+                            VATIDCheckSetup."Account Validation"::"VAT ID+Account Name":
+                                begin
+                                    if (VATIDCheckLogs."Requested Field" = VATIDCheckSetup."Name Check Tag") then begin
+                                        if (VATIDCheckLogs."Response Code" IN ['A', 'D'] = false) then
+                                            Success := false;
+                                    end;
+                                end;
+                            VATIDCheckSetup."Account Validation"::"VAT ID+Account Name+Account Address":
+                                begin
+                                    if (VATIDCheckLogs."Requested Field" = VATIDCheckSetup."Name Check Tag") then begin
+                                        if (VATIDCheckLogs."Response Code" IN ['A', 'D'] = false) then
+                                            Success := false;
+                                    end;
+                                    if (VATIDCheckLogs."Requested Field" = VATIDCheckSetup."Street Check Tag") then begin
+                                        if (VATIDCheckLogs."Response Code" IN ['A', 'D'] = false) then
+                                            Success := false;
+                                    end;
+                                    if (VATIDCheckLogs."Requested Field" = VATIDCheckSetup."City Check Tag") then begin
+                                        if (VATIDCheckLogs."Response Code" IN ['A', 'D'] = false) then
+                                            Success := false;
+                                    end;
+                                    if (VATIDCheckLogs."Requested Field" = VATIDCheckSetup."Post Code Check Tag") then begin
+                                        if (VATIDCheckLogs."Response Code" IN ['A', 'D'] = false) then
+                                            Success := false;
+                                    end;
+                                end;
+                        end;
+                    until VATIDCheckLogs.Next = 0;
+                end else
+                    Success := false;
+                if Success then
+                    ResponseAction(ResponseCode::Validated)
+                else
+                    ResponseAction(ResponseCode::notValidated);
             end;
-        end;
+        end else
+            ResponseAction(ResponseCode::notValidated);
     end;
 
     var

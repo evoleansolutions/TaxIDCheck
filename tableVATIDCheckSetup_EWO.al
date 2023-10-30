@@ -28,7 +28,7 @@ table 50000 "VATIDCheckSetup_EWO"
         field(11; "Account Validation"; Option)
         {
             DataClassification = ToBeClassified;
-            OptionMembers = "VAT ID","VAT ID+Account Name","VAT ID+Account Name+Account Address";
+            OptionMembers = " ","VAT ID","VAT ID+Account Name","VAT ID+Account Name+Account Address";
         }
 
     }
