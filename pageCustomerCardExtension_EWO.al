@@ -17,22 +17,18 @@ pageextension 50003 CustomerCardExtension_EWO extends "Customer Card"
     }
     actions
     {
-        addlast(Creation)
+        addlast("F&unctions")
         {
-            group(VatIDAccountCheck)
+            action(CheckCustomerAccount)
             {
-                Caption = 'Vat ID Account Check';
-                action(CheckCustomerAccount)
-                {
-                    ApplicationArea = Basic;
-                    Caption = 'Check Customer Account';
-                    trigger OnAction()
-                    var
-                        VATIDCheckCall: Codeunit VATIDCheckRequest_EWO;
-                    begin
-                        VATIDCheckCall.ValidateRequest(0, Rec."No.");
-                    end;
-                }
+                ApplicationArea = Basic;
+                Caption = 'Check VAT Validation';
+                trigger OnAction()
+                var
+                    VATIDCheckCall: Codeunit VATIDCheckRequest_EWO;
+                begin
+                    VATIDCheckCall.ValidateRequest(0, Rec."No.");
+                end;
             }
         }
     }
