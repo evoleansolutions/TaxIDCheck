@@ -21,15 +21,16 @@ codeunit 50000 "VATIDCheckRequest_EWO"
                 begin
                     Customer.Get(AccountNo);
                     MakeRequest;
-
-                    /*                     if Customer."VAT ID Check Date" = 0D then
-                                            MakeRequest()
-                                        else begin
-                                            if Customer."VAT ID Check Date" > ControlDate then
-                                                ResponseAction(ValidateOption::Validated)
-                                            else
-                                                MakeRequest();
-                                        end; */
+                    /*                     
+                    if Customer."VAT ID Check Date" = 0D then
+                        MakeRequest()
+                    else begin
+                        if Customer."VAT ID Check Date" > ControlDate then
+                            ResponseAction(ValidateOption::Validated)
+                        else
+                            MakeRequest();
+                    end; 
+                    */
 
                 end;
             AccountType::pVendor:
